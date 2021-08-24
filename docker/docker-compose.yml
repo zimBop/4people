@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+ php-fpm:
+  user: mitek:mitek
+  build:
+   context: ./php-fpm
+  volumes:
+   - ../laravel:/var/www
+
+ nginx:
+  build:
+   context: ./nginx
+  volumes:
+    - ./logs:/var/log/nginx
+    - ../laravel:/var/www
+    - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    - ./nginx/sites/:/etc/nginx/sites-available
+    - ./nginx/conf.d/:/etc/nginx/conf.d
+  ports:
+   - "80:80"
+   - "443:443"
+  depends_on:
+   - php-fpm
+
+ postgres:
+  build:
+   context: ./postgres
+  ports:
+   - "5432:5432"
+  environment:
+   - POSTGRES_DB=${POSTGRES_DB}
+   - POSTGRES_USER=${POSTGRES_USER}
+   - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
