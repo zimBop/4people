@@ -10,6 +10,8 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use GuzzleHttp\Client;
+use App\Models\Image;
+use App\Models\News;
 
 class GetNewsItemJob implements ShouldQueue
 {
@@ -44,7 +46,20 @@ class GetNewsItemJob implements ShouldQueue
         $parser->setParseStrategy($parseStrategy);
         $parser->setHttpClient($client);
 
-        $news = $parser->getNewsItem($this->uri);
-        // TODO save news
+        $newsData = $parser->getNewsItem($this->uri);
+
+        if (empty($newsData['header']) || empty($newsData['text'])) {
+            return;
+        }
+
+        $newsModel = News::create($newsData);
+
+        if ($newsData['image']) {
+            $image = Image::create([
+                'src' => $newsData['image']
+            ]);
+            $newsModel->image()->associate($image);
+            $newsModel->save();
+        }
     }
 }

@@ -18,6 +18,8 @@ install:              ## Install project and initialize
 	@docker-compose exec php-fpm php artisan key:generate
 	@echo "${YELLOW}Installing dependencies...${RESET}"
 	@make dependencies
+	@echo "${YELLOW}Applying migrations...${RESET}"
+	@docker-compose exec php-fpm php artisan migrate
 	@echo "${GREEN}Install complete.${RESET}"
 
 rebuild:              ## Rebuild all project containers
