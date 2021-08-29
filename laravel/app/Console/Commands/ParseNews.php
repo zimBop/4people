@@ -53,7 +53,9 @@ class ParseNews extends Command
         $parser->setParseStrategy($parseStrategy);
         $parser->setHttpClient($this->client);
 
-        $parser->getNewsList();
+        $parser->createNewsItemJobs(
+            $parser->getNewsList()
+        );
 
         return 0;
     }

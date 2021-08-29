@@ -9,42 +9,68 @@ class RbkParseStrategy implements ParseStrategyInterface
 {
     private Crawler $crawler;
 
-    private const INCORRECT_URIS = [
-        'http://www.adv.rbc.ru'
-    ];
+    private array $config;
 
     public function __construct()
     {
         $this->crawler = new Crawler();
+
+        $this->config = config('news_resources.' . ParserConstants::RBK_RESOURCE);
     }
 
-    public function parseNewsLinks(string $newsListString): array
+    public function parseNewsLinks(string $newsListHtml): array
     {
-        $this->crawler->addHtmlContent($newsListString);
+        $this->crawler->addHtmlContent($newsListHtml);
 
-        $selector = config('news_resources.' . ParserConstants::RBK_RESOURCE . '.newsListSelector');
+        $selector = $this->config['newsListSelector'];
         $linkObjects = $this->crawler->filter($selector)->links();
 
         $links = [];
-        for ($i = 0; $i <= ParserConstants::MAX_NEWS_NUMBER; $i++) {
-            if ($i + 1 > count($linkObjects)) {
-                break;
-            }
-
+        $i = 0;
+        while (isset($linkObjects[$i]) && count($links) < ParserConstants::MAX_NEWS_NUMBER) {
             $uri = $linkObjects[$i]->getUri();
+            $host = parse_url($uri)['host'];
 
-            if (in_array($uri, self::INCORRECT_URIS)) {
+            // Rbk news feed may contain links to these hosts.
+            // But this is not news, so we have to skip them.
+            if (in_array($host, $this->config['host_blacklist'])) {
+                $i++;
                 continue;
             }
 
-            $links[] = $uri;
+            $links[] = $this->removeQueryString($uri);
+            $i++;
         }
 
         return $links;
     }
 
-    public function parseNewsItem(string $newsItemString): string
+    public function parseNewsItem(string $newsItemHtml): array
     {
-        // TODO: Implement parseNewsItem() method.
+        $result = [];
+
+        $this->crawler->addHtmlContent($newsItemHtml);
+        $selectors = $this->config['newsItemSelectors'];
+
+        $imageNodes = $this->crawler->filter($selectors['image']);
+        $result['image'] = $imageNodes->count() ? $imageNodes->image()->getUri() : '';
+
+        $headerNode = $this->crawler->filter($selectors['header']);
+        $result['header'] = $headerNode->count() ? $headerNode->text() : '';
+
+        $overviewNode = $this->crawler->filter($selectors['overview']);
+        $result['text'] = $overviewNode->count() ? $overviewNode->outerHtml() : '';
+
+        $textNodes = $this->crawler->filter($selectors['text']);
+        $textNodes->each(function ($paragraph) use (&$result) {
+            $result['text'] .= $paragraph->outerHtml();
+        });
+
+        return $result;
+    }
+
+    private function removeQueryString(string $uri): string
+    {
+        return strtok($uri, '?');
     }
 }

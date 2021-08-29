@@ -5,6 +5,7 @@ namespace App\NewsParser\Interfaces;
 interface ParserInterface
 {
     public function setParseStrategy(ParseStrategyInterface $parseStrategy): void;
-    public function getNewsList(): string;
-    public function getNewsItem(): string;
+    public function getNewsList(): array;
+    public function createNewsItemJobs(array $newsList): void;
+    public function getNewsItem(string $uri): array;
 }
