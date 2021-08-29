@@ -2,6 +2,9 @@
 
 return [
 
-    'rbk' => 'https://www.rbc.ru/',
+    'rbk' => [
+        'url' => 'https://www.rbc.ru/',
+        'newsListSelector' => '.js-news-feed-list a',
+    ]
 
 ];

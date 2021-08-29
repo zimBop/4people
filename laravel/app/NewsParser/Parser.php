@@ -2,6 +2,7 @@
 
 namespace App\NewsParser;
 
+use App\Jobs\GetNewsItem;
 use GuzzleHttp\ClientInterface;
 use App\NewsParser\Interfaces\ParserInterface;
 use App\NewsParser\Interfaces\ParseStrategyInterface;
@@ -21,7 +22,7 @@ class Parser implements ParserInterface
 
     private function getResourceUrl(): string
     {
-        return config('news_resources.' . $this->resource);
+        return config('news_resources.' . $this->resource . '.url');
     }
 
     public function setParseStrategy(ParseStrategyInterface $parseStrategy): void
@@ -49,7 +50,11 @@ class Parser implements ParserInterface
             // TODO handle exception
         }
 
-        $this->parseStrategy->parseNewsLinks($data);
+        $newsList = $this->parseStrategy->parseNewsLinks($data);
+
+        foreach ($newsList as $newsUri) {
+            GetNewsItem::dispatch($newsUri);
+        }
     }
 
     public function getNewsItem(): string
