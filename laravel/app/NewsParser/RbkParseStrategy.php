@@ -84,7 +84,7 @@ class RbkParseStrategy extends AbstractParseStrategy
         $textNodes = $this->crawler->filter($selectors['text']);
         $result['text'] = '';
         $textNodes->each(function ($paragraph) use (&$result) {
-            $result['text'] .= '<p>' . $paragraph->text() . '</p>>';
+            $result['text'] .= '<p>' . $paragraph->text() . '</p>';
         });
 
         return $result;
