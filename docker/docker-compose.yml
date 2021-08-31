@@ -32,3 +32,10 @@ services:
    - POSTGRES_DB=${POSTGRES_DB}
    - POSTGRES_USER=${POSTGRES_USER}
    - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+ selenium:
+  build: ./selenium
+  ports:
+   - "4444:4444"
+  volumes:
+   - /dev/shm:/dev/shm
