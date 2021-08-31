@@ -14,10 +14,10 @@ install:              ## Install project and initialize
 	@docker-compose up -d --build --remove-orphans --force-recreate
 	@echo "${YELLOW}Create Laravel environment file...${RESET}"
 	@docker-compose exec php-fpm cp .env.example .env
-	@echo "${YELLOW}Generating new APP_KEY private key...${RESET}"
-	@docker-compose exec php-fpm php artisan key:generate
 	@echo "${YELLOW}Installing dependencies...${RESET}"
 	@make dependencies
+	@echo "${YELLOW}Generating new APP_KEY private key...${RESET}"
+	@docker-compose exec php-fpm php artisan key:generate
 	@echo "${YELLOW}Applying migrations...${RESET}"
 	@docker-compose exec php-fpm php artisan migrate
 	@echo "${GREEN}Install complete.${RESET}"
