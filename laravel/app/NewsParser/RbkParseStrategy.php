@@ -79,11 +79,12 @@ class RbkParseStrategy extends AbstractParseStrategy
         $result['header'] = $headerNode->count() ? $headerNode->text() : '';
 
         $overviewNode = $this->crawler->filter($selectors['overview']);
-        $result['text'] = $overviewNode->count() ? $overviewNode->outerHtml() : '';
+        $result['overview'] = $overviewNode->count() ? $overviewNode->text() : '';
 
         $textNodes = $this->crawler->filter($selectors['text']);
+        $result['text'] = '';
         $textNodes->each(function ($paragraph) use (&$result) {
-            $result['text'] .= $paragraph->outerHtml();
+            $result['text'] .= '<p>' . $paragraph->text() . '</p>>';
         });
 
         return $result;

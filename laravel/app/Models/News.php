@@ -11,6 +11,7 @@ class News extends Model
 
     protected $fillable = [
         'header',
+        'overview',
         'text',
         'original_uri',
     ];
