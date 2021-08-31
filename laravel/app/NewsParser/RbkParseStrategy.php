@@ -2,10 +2,9 @@
 
 namespace App\NewsParser;
 
-use App\NewsParser\Interfaces\ParseStrategyInterface;
 use Symfony\Component\DomCrawler\Crawler;
 
-class RbkParseStrategy implements ParseStrategyInterface
+class RbkParseStrategy extends AbstractParseStrategy
 {
     private Crawler $crawler;
 
@@ -13,13 +12,15 @@ class RbkParseStrategy implements ParseStrategyInterface
 
     public function __construct()
     {
-        $this->crawler = new Crawler();
-
         $this->config = config('news_resources.' . ParserConstants::RBK_RESOURCE);
+
+        $this->crawler = new Crawler('', $this->config['url']);
     }
 
-    public function parseNewsLinks(string $newsListHtml): array
+    public function parseNewsLinks(): array
     {
+        $newsListHtml = $this->getNewsListHtml();
+
         $this->crawler->addHtmlContent($newsListHtml);
 
         $selector = $this->config['newsListSelector'];
@@ -45,9 +46,28 @@ class RbkParseStrategy implements ParseStrategyInterface
         return $links;
     }
 
-    public function parseNewsItem(string $newsItemHtml): array
+    private function getNewsListHtml(): string
     {
-        $result = [];
+        $this->browser
+            ->visit($this->config['url'])
+            // Scroll down page to send 'get-news-feed' ajax request and receive full news list
+            ->driver->executeScript('window.scrollTo(0,document.body.scrollHeight);');
+
+        return $this->browser
+            ->pause(100)
+            // $.active - counter for active jQuery ajax requests
+            // When response received $.active will be == 0
+            ->waitUntil('!$.active')
+            ->driver->getPageSource();
+    }
+
+    public function parseNewsItem(string $uri): array
+    {
+        $result = [
+            'original_uri' => $uri,
+        ];
+
+        $newsItemHtml = $this->sendHttpRequest($uri);
 
         $this->crawler->addHtmlContent($newsItemHtml);
         $selectors = $this->config['newsItemSelectors'];
@@ -67,10 +87,5 @@ class RbkParseStrategy implements ParseStrategyInterface
         });
 
         return $result;
-    }
-
-    private function removeQueryString(string $uri): string
-    {
-        return strtok($uri, '?');
     }
 }

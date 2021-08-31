@@ -41,14 +41,16 @@ class GetNewsItemJob implements ShouldQueue
     {
         $parseStrategyFactory = new ParseStrategyFactory();
         $parseStrategy = $parseStrategyFactory->getParseStrategy($this->resource);
+        $parseStrategy->setHttpClient($client);
 
         $parser = new Parser($this->resource);
         $parser->setParseStrategy($parseStrategy);
-        $parser->setHttpClient($client);
 
         $newsData = $parser->getNewsItem($this->uri);
 
         if (empty($newsData['header']) || empty($newsData['text'])) {
+            // TODO log news $uri
+
             return;
         }
 

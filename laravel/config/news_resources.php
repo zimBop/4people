@@ -6,9 +6,9 @@ return [
         'url' => 'https://www.rbc.ru/',
         'newsListSelector' => '.js-news-feed-list a',
         'newsItemSelectors' => [
-            'header' => 'h1.article__header__title-in',
-            'overview' => '.article__text > .article__text__overview',
-            'text' => '.article__text > p',
+            'header' => 'h1.article__header__title-in, h1.article__header, .article__header h1',
+            'overview' => '.article__text > .article__text__overview, .article__overview > .article__subtitle, .article__header__anons',
+            'text' => '.article__text > p, .article__text .l-base__col__main > p',
             'image' => '.article__main-image img',
         ],
 

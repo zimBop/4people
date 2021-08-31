@@ -9,8 +9,6 @@ use App\NewsParser\Interfaces\ParseStrategyInterface;
 
 class Parser implements ParserInterface
 {
-    private ClientInterface $client;
-
     private ParseStrategyInterface $parseStrategy;
 
     private string $resource;
@@ -18,11 +16,6 @@ class Parser implements ParserInterface
     public function __construct(string $resource)
     {
         $this->resource = $resource;
-    }
-
-    private function getResourceUrl(): string
-    {
-        return config('news_resources.' . $this->resource . '.url');
     }
 
     public function setParseStrategy(ParseStrategyInterface $parseStrategy): void
@@ -37,9 +30,7 @@ class Parser implements ParserInterface
 
     public function getNewsList(): array
     {
-        $data = $this->sendRequest($this->getResourceUrl());
-
-        return $this->parseStrategy->parseNewsLinks($data);
+        return $this->parseStrategy->parseNewsLinks();
     }
 
     public function createNewsItemJobs(array $newsList): void
@@ -51,25 +42,6 @@ class Parser implements ParserInterface
 
     public function getNewsItem(string $uri): array
     {
-        return $this->parseStrategy->parseNewsItem(
-            $this->sendRequest($uri)
-        );
-    }
-
-    private function sendRequest(string $uri): string
-    {
-        try {
-            $response = $this->client->request('GET', $uri);
-
-            if ($response->getStatusCode() !== 200) {
-                throw new \Exception();
-            }
-
-            return $response->getBody()->getContents();
-
-        } catch (\Exception $e) {
-            // TODO handle exception
-            return '';
-        }
+        return $this->parseStrategy->parseNewsItem($uri);
     }
 }

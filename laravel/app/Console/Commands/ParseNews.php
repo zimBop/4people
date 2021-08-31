@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use App\NewsParser\Parser;
 use App\NewsParser\ParseStrategyFactory;
 use Illuminate\Console\Command;
-use GuzzleHttp\Client;
+use Laravel\Dusk\Browser;
 
 class ParseNews extends Command
 {
@@ -23,18 +23,18 @@ class ParseNews extends Command
      */
     protected $description = 'Parse news from resource';
 
-    private Client $client;
+    private Browser $browser;
 
     /**
      * Create a new command instance.
      *
      * @return void
      */
-    public function __construct(Client $client)
+    public function __construct(Browser $browser)
     {
         parent::__construct();
 
-        $this->client = $client;
+        $this->browser = $browser;
     }
 
     /**
@@ -48,10 +48,10 @@ class ParseNews extends Command
 
         $parseStrategyFactory = new ParseStrategyFactory();
         $parseStrategy = $parseStrategyFactory->getParseStrategy($resource);
+        $parseStrategy->setBrowser($this->browser);
 
         $parser = new Parser($resource);
         $parser->setParseStrategy($parseStrategy);
-        $parser->setHttpClient($this->client);
 
         $parser->createNewsItemJobs(
             $parser->getNewsList()
